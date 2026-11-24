@@ -2,7 +2,24 @@
 
 A small, complete AI assistant module of the kind you add to an existing SaaS app: a NestJS API that talks to OpenAI or Claude, streams replies over Server-Sent Events, keeps the conversation in PostgreSQL, and fits long chats into the model's token limit without silently dropping anything. A Next.js chat UI streams the reply as it is written.
 
-![Chat UI streaming a reply, with a stopped reply saved](docs/screenshot.jpg)
+**▶ Try it live: [hire.aqibchattha.com/samples/ai-chat](https://hire.aqibchattha.com/samples/ai-chat)** · [Watch the 38-second walkthrough (MP4)](docs/ai-chat-demo.mp4)
+
+![Walkthrough: streaming reply, Stop keeps the partial answer, reload restores the conversation](docs/ai-chat-demo.gif)
+
+## The live sample vs a delivered module
+
+The live sample proves the engineering. It runs the same design (streaming, stop, saved history, token budget, limits) as a Cloudflare Pages Function on a free open model, so anyone can try it at no cost. It is intentionally limited:
+
+| | Live sample | A module built for your product |
+|---|---|---|
+| Model | Free open model (Gemma 4 on Cloudflare Workers AI), short replies | The model you choose (OpenAI or Claude) on your own API key, switchable by config |
+| Fit | Generic assistant prompt | Prompt, tone and guardrails tuned to your product and users |
+| Users | Anonymous, no login | Inside your app and its authentication |
+| Limits | 10 messages per visitor per day | Limits per user or plan that you set, so model cost stays predictable |
+| History | Kept 7 days | Stored in your PostgreSQL, kept per your policy |
+| Hand-over | Public demo code | Tests, setup docs and a walkthrough so your team can run and extend it |
+
+Answer quality in the sample reflects a small free model with a generic prompt, not what your users would get.
 
 ## The three places chat modules usually break, and what this one does
 
@@ -84,6 +101,19 @@ cd api && npm test
 - Add authentication and key the rate limit by user id instead of IP.
 - Swap the character-based token estimate for the provider's tokenizer if you need exact counts.
 - Put the SSE endpoint behind a proxy with buffering disabled (the API already sends `X-Accel-Buffering: no` and a heartbeat every 15 s).
+
+## Two runtimes, one design
+
+| | This repo | Live sample |
+|---|---|---|
+| Runtime | NestJS API + Next.js UI | Cloudflare Pages Function + static page |
+| Database | PostgreSQL (TypeORM) | Cloudflare D1 (SQLite) |
+| Models | OpenAI, Anthropic, or mock | Workers AI (Gemma 4); Claude when an API key is set |
+| Same in both | Provider interface, SSE events (`token`, `done`, `error`), stop keeps the partial reply, token budget with running summary, limits |
+
+## Screenshot
+
+![Chat UI streaming a reply, with a stopped reply saved](docs/screenshot.jpg)
 
 ## Licence
 
